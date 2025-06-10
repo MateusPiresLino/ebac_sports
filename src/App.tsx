@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Produtos from './containers/Produtos'
+import { useDispatch, useSelector } from 'react-redux'
+import { adicionarProduto } from './store/carrinhoSlice'
 
 import { GlobalStyle } from './styles'
+import { RootState } from './store/store'
 
 export type Produto = {
   id: number
@@ -12,8 +15,14 @@ export type Produto = {
 }
 
 function App() {
+  const dispatch = useDispatch()
+
   const [produtos, setProdutos] = useState<Produto[]>([])
-  const [carrinho, setCarrinho] = useState<Produto[]>([])
+  const itensNoCarrinho = useSelector(
+    (state: RootState) => state.carrinho.itens
+  )
+  const mensagem = useSelector((state: RootState) => state.carrinho.mensagem)
+
   const [favoritos, setFavoritos] = useState<Produto[]>([])
 
   useEffect(() => {
@@ -22,12 +31,14 @@ function App() {
       .then((res) => setProdutos(res))
   }, [])
 
-  function adicionarAoCarrinho(produto: Produto) {
-    if (carrinho.find((p) => p.id === produto.id)) {
-      alert('Item já adicionado')
-    } else {
-      setCarrinho([...carrinho, produto])
+  useEffect(() => {
+    if (mensagem !== '') {
+      alert(mensagem)
     }
+  }, [mensagem])
+
+  function adicionarAoCarrinho(produto: Produto) {
+    dispatch(adicionarProduto(produto))
   }
 
   function favoritar(produto: Produto) {
@@ -43,7 +54,7 @@ function App() {
     <>
       <GlobalStyle />
       <div className="container">
-        <Header favoritos={favoritos} itensNoCarrinho={carrinho} />
+        <Header favoritos={favoritos} itensNoCarrinho={itensNoCarrinho} />
         <Produtos
           produtos={produtos}
           favoritos={favoritos}
